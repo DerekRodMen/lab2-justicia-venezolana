@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+
+import { useMemo, useRef, useState } from "react";
 
 type VoiceFaq = {
   question: string;
@@ -151,46 +152,24 @@ export default function VoiceAssistant() {
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
   const [error, setError] = useState("");
-  const [isSpeechReady, setIsSpeechReady] = useState(false);
-  const [isRecognitionReady, setIsRecognitionReady] = useState(false);
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  useEffect(() => {
-    setIsSpeechReady("speechSynthesis" in window);
-    setIsRecognitionReady(
-      Boolean(window.SpeechRecognition || window.webkitSpeechRecognition)
-    );
-  }, []);
-
-  const pickLatinVoice = (voices: SpeechSynthesisVoice[]) => {
-    const preferredVoice = voices.find((voice) =>
-      ["es-419", "es-MX", "es-US", "es-CO", "es-AR"].includes(voice.lang)
-    );
-
-    if (preferredVoice) {
-      return preferredVoice;
-    }
-
-    return voices.find((voice) => voice.lang.startsWith("es"));
-  };
+  const supported = useMemo(
+    () => typeof window !== "undefined" && "speechSynthesis" in window,
+    []
+  );
 
   const speak = (text: string) => {
-    if (!("speechSynthesis" in window)) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       return;
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const selectedVoice = pickLatinVoice(voices);
 
-    utterance.lang = selectedVoice?.lang ?? "es-419";
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
-
-    utterance.rate = 0.95;
+    utterance.lang = "es-ES";
+    utterance.rate = 1;
     utterance.pitch = 1;
-
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
@@ -214,30 +193,24 @@ export default function VoiceAssistant() {
     }
 
     const recognition = new SpeechRecognitionClass();
-    recognition.lang = "es-419";
+
+    recognition.lang = "es-ES";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      setError("Micrófono activado. Te escucho...");
-    };
+    recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event) => {
       const spokenText = event.results[0][0].transcript;
       setTranscript(spokenText);
       const agentResponse = getReply(spokenText);
       setResponse(agentResponse);
-      setError("");
+
       speak(agentResponse);
     };
 
-    recognition.onerror = (event) => {
-      if (event.error === "not-allowed") {
-        setError("Debes permitir acceso al micrófono para hablar con el asistente.");
-      } else {
-        setError("No pude escuchar con claridad. Intenta nuevamente.");
-      }
+    recognition.onerror = () => {
+      setError("No pude escuchar con claridad. Intenta nuevamente.");
       setIsListening(false);
     };
 
@@ -251,11 +224,8 @@ export default function VoiceAssistant() {
     setTranscript(question);
     const agentResponse = getReply(question);
     setResponse(agentResponse);
-    setError("");
 
-    if (isSpeechReady) {
-      speak(agentResponse);
-    }
+    speak(agentResponse);
   };
 
   return (
@@ -290,7 +260,8 @@ export default function VoiceAssistant() {
                 type="button"
                 className="btn btn-fx"
                 onClick={startListening}
-                disabled={!isRecognitionReady || isListening}
+
+                disabled={!supported || isListening}
               >
                 <i className="bi bi-mic me-1"></i>
                 {isListening ? "Escuchando..." : "Hablar con el asistente"}
@@ -313,7 +284,9 @@ export default function VoiceAssistant() {
                 <h3 className="h5 fw-bold">Flujo de interacción</h3>
                 <ol className="mb-0 fx-muted">
                   <li>El usuario pulsa “Hablar con el asistente”.</li>
-                  <li>El sistema abre el micrófono automáticamente.</li>
+
+                  <li>El sistema captura la pregunta por voz.</li>
+
                   <li>El agente identifica la intención.</li>
                   <li>Responde con texto y voz automáticamente.</li>
                 </ol>
