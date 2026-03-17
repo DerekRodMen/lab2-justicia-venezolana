@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useMemo, useRef, useState } from "react";
 
 type VoiceFaq = {
@@ -151,6 +152,7 @@ export default function VoiceAssistant() {
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
   const [error, setError] = useState("");
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const supported = useMemo(
@@ -164,6 +166,7 @@ export default function VoiceAssistant() {
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
+
     utterance.lang = "es-ES";
     utterance.rate = 1;
     utterance.pitch = 1;
@@ -190,6 +193,7 @@ export default function VoiceAssistant() {
     }
 
     const recognition = new SpeechRecognitionClass();
+
     recognition.lang = "es-ES";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -201,6 +205,7 @@ export default function VoiceAssistant() {
       setTranscript(spokenText);
       const agentResponse = getReply(spokenText);
       setResponse(agentResponse);
+
       speak(agentResponse);
     };
 
@@ -219,6 +224,7 @@ export default function VoiceAssistant() {
     setTranscript(question);
     const agentResponse = getReply(question);
     setResponse(agentResponse);
+
     speak(agentResponse);
   };
 
@@ -254,6 +260,7 @@ export default function VoiceAssistant() {
                 type="button"
                 className="btn btn-fx"
                 onClick={startListening}
+
                 disabled={!supported || isListening}
               >
                 <i className="bi bi-mic me-1"></i>
@@ -277,7 +284,9 @@ export default function VoiceAssistant() {
                 <h3 className="h5 fw-bold">Flujo de interacción</h3>
                 <ol className="mb-0 fx-muted">
                   <li>El usuario pulsa “Hablar con el asistente”.</li>
+
                   <li>El sistema captura la pregunta por voz.</li>
+
                   <li>El agente identifica la intención.</li>
                   <li>Responde con texto y voz automáticamente.</li>
                 </ol>
