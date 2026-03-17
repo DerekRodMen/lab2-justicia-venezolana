@@ -1,7 +1,6 @@
 "use client";
 
-
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type VoiceFaq = {
   question: string;
@@ -19,6 +18,16 @@ type KnowledgeBase = {
   purchasingProcess: string;
   promotions: string;
   faqs: VoiceFaq[];
+};
+
+type RecognitionLike = SpeechRecognition & {
+  continuous?: boolean;
+};
+
+type RecognitionConstructorLike = new () => RecognitionLike;
+
+type WebkitSpeechWindow = Window & {
+  webkitSpeechRecognition?: RecognitionConstructorLike;
 };
 
 const knowledgeBase: KnowledgeBase = {
@@ -147,29 +156,51 @@ const getReply = (question: string) => {
   return "Puedo ayudarte con servicios, horarios, ubicación, promociones, contacto, compras y preguntas frecuentes. Intenta con otra pregunta.";
 };
 
+function getRecognitionConstructor(): RecognitionConstructorLike | null {
+  if (typeof window === "undefined") return null;
+
+  const standardCtor = (
+    window as Window & {
+      SpeechRecognition?: RecognitionConstructorLike;
+    }
+  ).SpeechRecognition;
+
+  const webkitCtor = (window as WebkitSpeechWindow).webkitSpeechRecognition;
+
+  return standardCtor ?? webkitCtor ?? null;
+}
+
 export default function VoiceAssistant() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
   const [error, setError] = useState("");
+  const [supported, setSupported] = useState(false);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<RecognitionLike | null>(null);
 
-  const supported = useMemo(
-    () => typeof window !== "undefined" && "speechSynthesis" in window,
-    []
-  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasSpeechSynthesis = "speechSynthesis" in window;
+    const hasSpeechRecognition = !!getRecognitionConstructor();
+
+    setSupported(hasSpeechSynthesis && hasSpeechRecognition);
+
+    return () => {
+      recognitionRef.current?.stop();
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   const speak = (text: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
-    }
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-
     utterance.lang = "es-ES";
     utterance.rate = 1;
     utterance.pitch = 1;
+
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
@@ -180,48 +211,90 @@ export default function VoiceAssistant() {
   };
 
   const startListening = () => {
-    setError("");
+    if (typeof window === "undefined" || isListening) return;
 
-    const SpeechRecognitionClass =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    setError("");
+    setTranscript("");
+    setResponse("");
+
+    const SpeechRecognitionClass = getRecognitionConstructor();
 
     if (!SpeechRecognitionClass) {
       setError(
-        "Tu navegador no soporta reconocimiento de voz. Puedes usar los botones de preguntas rápidas."
+        "Tu navegador no soporta reconocimiento de voz. Usa Chrome en computadora o las preguntas rápidas."
       );
       return;
     }
 
+    recognitionRef.current?.stop();
+
     const recognition = new SpeechRecognitionClass();
 
     recognition.lang = "es-ES";
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
+    recognition.continuous = true;
 
-    recognition.onstart = () => setIsListening(true);
+    let finalTranscript = "";
 
-    recognition.onresult = (event) => {
-      const spokenText = event.results[0][0].transcript;
-      setTranscript(spokenText);
-      const agentResponse = getReply(spokenText);
-      setResponse(agentResponse);
-
-      speak(agentResponse);
+    recognition.onstart = () => {
+      setIsListening(true);
     };
 
-    recognition.onerror = () => {
-      setError("No pude escuchar con claridad. Intenta nuevamente.");
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const text = event.results[i][0].transcript;
+
+        if (event.results[i].isFinal) {
+          finalTranscript += ` ${text}`;
+        } else {
+          interimTranscript += ` ${text}`;
+        }
+      }
+
+      const fullText = `${finalTranscript} ${interimTranscript}`.trim();
+      setTranscript(fullText);
+
+      if (finalTranscript.trim()) {
+        const cleanQuestion = finalTranscript.trim();
+        const agentResponse = getReply(cleanQuestion);
+
+        setTranscript(cleanQuestion);
+        setResponse(agentResponse);
+        speak(agentResponse);
+
+        recognition.stop();
+      }
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error === "no-speech") {
+        setError("No detecté voz. Habla apenas presiones el botón.");
+      } else if (event.error === "not-allowed") {
+        setError("El navegador no tiene permiso para usar el micrófono.");
+      } else if (event.error === "audio-capture") {
+        setError("No se pudo acceder al micrófono.");
+      } else {
+        setError("No pude escuchar con claridad. Intenta nuevamente.");
+      }
+
       setIsListening(false);
     };
 
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+    };
 
     recognitionRef.current = recognition;
     recognition.start();
   };
 
   const handleQuickQuestion = (question: string) => {
+    setError("");
     setTranscript(question);
+
     const agentResponse = getReply(question);
     setResponse(agentResponse);
 
@@ -243,6 +316,7 @@ export default function VoiceAssistant() {
                 por voz sobre Force Extreme.
               </p>
             </div>
+
             <div className="d-flex flex-wrap gap-2">
               <button
                 type="button"
@@ -256,16 +330,17 @@ export default function VoiceAssistant() {
                 <i className="bi bi-volume-up me-1"></i>
                 Escuchar bienvenida
               </button>
+
               <button
                 type="button"
                 className="btn btn-fx"
                 onClick={startListening}
-
                 disabled={!supported || isListening}
               >
                 <i className="bi bi-mic me-1"></i>
                 {isListening ? "Escuchando..." : "Hablar con el asistente"}
               </button>
+
               <button
                 type="button"
                 className="btn btn-fx-outline"
@@ -284,9 +359,7 @@ export default function VoiceAssistant() {
                 <h3 className="h5 fw-bold">Flujo de interacción</h3>
                 <ol className="mb-0 fx-muted">
                   <li>El usuario pulsa “Hablar con el asistente”.</li>
-
                   <li>El sistema captura la pregunta por voz.</li>
-
                   <li>El agente identifica la intención.</li>
                   <li>Responde con texto y voz automáticamente.</li>
                 </ol>
