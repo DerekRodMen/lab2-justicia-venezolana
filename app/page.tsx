@@ -1,4 +1,5 @@
 import LeadForm from "@/components/LeadForm";
+import VoiceAssistant from "@/components/VoiceAssistant";
 
 const beneficios = [
   {
@@ -131,6 +132,18 @@ const faqs = [
     answer:
       "Eso depende de tu objetivo, tiempo disponible y nivel actual. Escríbenos y te ayudamos a elegir el plan más adecuado.",
   },
+  {
+    id: "faqFour",
+    question: "¿Qué incluye la promoción de bienvenida?",
+    answer:
+      "Incluye evaluación inicial y rutina de arranque sin costo para nuevos clientes, sujeta a cupos por horario.",
+  },
+  {
+    id: "faqFive",
+    question: "¿Cómo me inscribo o reservo?",
+    answer:
+      "Puedes completar el formulario de contacto o escribir por WhatsApp para confirmar plan, horario y proceso de inscripción.",
+  },
 ];
 
 export default function Home() {
@@ -197,6 +210,11 @@ export default function Home() {
               <li className="nav-item">
                 <a className="nav-link" href="#promos">
                   Planes
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="#agente-voz">
+                  Asistente IA
                 </a>
               </li>
               <li className="nav-item">
@@ -631,6 +649,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <VoiceAssistant />
 
         <section className="section anchor" id="contacto">
           <div className="container">
