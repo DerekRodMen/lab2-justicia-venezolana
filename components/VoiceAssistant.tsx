@@ -30,6 +30,11 @@ type WebkitSpeechWindow = Window & {
   webkitSpeechRecognition?: RecognitionConstructorLike;
 };
 
+
+interface SpeechRecognitionEventExtended extends SpeechRecognitionEvent {
+  resultIndex: number;
+}
+
 const knowledgeBase: KnowledgeBase = {
   businessName: "Force Extreme",
   description:
@@ -243,17 +248,18 @@ export default function VoiceAssistant() {
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = "";
-const ev = event as any;
+      
+      const ev = event as SpeechRecognitionEventExtended;
 
-for (let i = ev.resultIndex; i < ev.results.length; i++) {
-  const text = ev.results[i][0].transcript;
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const text = ev.results[i][0].transcript;
 
-  if (ev.results[i].isFinal) {
-    finalTranscript += ` ${text}`;
-  } else {
-    interimTranscript += ` ${text}`;
-  }
-}
+        if (ev.results[i].isFinal) {
+          finalTranscript += ` ${text}`;
+        } else {
+          interimTranscript += ` ${text}`;
+        }
+      }
 
       const fullText = `${finalTranscript} ${interimTranscript}`.trim();
       setTranscript(fullText);
@@ -359,7 +365,7 @@ for (let i = ev.resultIndex; i < ev.results.length; i++) {
               <div className="voice-panel p-3 h-100">
                 <h3 className="h5 fw-bold">Flujo de interacción</h3>
                 <ol className="mb-0 fx-muted">
-                  <li>El usuario pulsa “Hablar con el asistente”.</li>
+                  <li>El usuario pulsa "Hablar con el asistente".</li>
                   <li>El sistema captura la pregunta por voz.</li>
                   <li>El agente identifica la intención.</li>
                   <li>Responde con texto y voz automáticamente.</li>
