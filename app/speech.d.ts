@@ -1,3 +1,5 @@
+// speech.d.ts
+
 declare global {
   interface Window {
     SpeechRecognition: {
@@ -8,25 +10,47 @@ declare global {
     };
   }
 
+  interface SpeechRecognition extends EventTarget {
+    continuous: boolean;
+    lang: string;
+    interimResults: boolean;
+    maxAlternatives: number;
+    start: () => void;
+    stop: () => void;
+    abort: () => void;
+    onaudiostart?: (event: Event) => void;
+    onsoundstart?: (event: Event) => void;
+    onspeechstart?: (event: Event) => void;
+    onspeechend?: (event: Event) => void;
+    onsoundend?: (event: Event) => void;
+    onaudioend?: (event: Event) => void;
+    onresult?: (event: SpeechRecognitionEvent) => void;
+    onnomatch?: (event: Event) => void;
+    onerror?: (event: SpeechRecognitionErrorEvent) => void;
+    onstart?: (event: Event) => void;
+    onend?: (event: Event) => void;
+  }
+
   interface SpeechRecognitionEvent extends Event {
     results: SpeechRecognitionResultList;
   }
 
-  interface SpeechRecognitionErrorEvent extends Event {
-    error: string;
-    message: string;
+  interface SpeechRecognitionResultList {
+    length: number;
+    item: (index: number) => SpeechRecognitionResult;
+    [index: number]: SpeechRecognitionResult;
   }
 
-  interface SpeechRecognition extends EventTarget {
-    lang: string;
-    interimResults: boolean;
-    maxAlternatives: number;
-    onstart: (() => void) | null;
-    onresult: ((event: SpeechRecognitionEvent) => void) | null;
-    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-    onend: (() => void) | null;
-    start(): void;
-    stop(): void;
+  interface SpeechRecognitionResult {
+    isFinal: boolean;
+    length: number;
+    item: (index: number) => SpeechRecognitionAlternative;
+    [index: number]: SpeechRecognitionAlternative;
+  }
+
+  interface SpeechRecognitionAlternative {
+    transcript: string;
+    confidence: number;
   }
 }
 

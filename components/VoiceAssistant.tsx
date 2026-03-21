@@ -38,6 +38,11 @@ interface SpeechRecognitionEventExtended extends SpeechRecognitionEvent {
   resultIndex: number;
 }
 
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
 /* --------------------------------------------------------------------------
    Base de conocimiento: respuestas, datos del negocio y preguntas frecuentes
 -------------------------------------------------------------------------- */

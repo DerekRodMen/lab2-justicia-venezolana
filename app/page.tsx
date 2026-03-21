@@ -1,5 +1,6 @@
-import LeadForm from "@/components/LeadForm";
+import Chatbot from "@/components/Chatbot";
 import VoiceAssistant from "@/components/VoiceAssistant";
+import LeadForm from "@/components/LeadForm";
 
 const beneficios = [
   {
@@ -213,8 +214,8 @@ export default function Home() {
                 </a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#agente-voz">
-                  Asistente IA
+                <a className="nav-link" href="#asistentes-ia">
+                  Asistentes IA
                 </a>
               </li>
               <li className="nav-item">
@@ -548,7 +549,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <p className="quote mb-0">“{item.quote}”</p>
+                      <p className="quote mb-0">"{item.quote}"</p>
                     </div>
                   </div>
                 ))}
@@ -650,7 +651,44 @@ export default function Home() {
           </div>
         </section>
 
-        <VoiceAssistant />
+        <section className="section anchor" id="asistentes-ia">
+          <div className="container">
+            <div className="text-center mb-5">
+              <h2 className="fw-bold">Asistentes Inteligentes</h2>
+              <p className="mb-0 fx-muted">
+                Contáctanos de la forma que prefieras: voz o chat
+              </p>
+            </div>
+
+            <div className="row g-4">
+              <div className="col-lg-6">
+                <div className="fx-surface p-4 h-100">
+                  <h3 className="fw-bold h4 mb-3">
+                    <i className="bi bi-mic-fill me-2 text-primary"></i>
+                    Asistente de Voz
+                  </h3>
+                  <p className="fx-muted mb-4">
+                    Habla con nuestro asistente virtual. Ideal para consultas rápidas mientras entrenas.
+                  </p>
+                  <VoiceAssistant />
+                </div>
+              </div>
+
+              <div className="col-lg-6">
+                <div className="fx-surface p-4 h-100">
+                  <h3 className="fw-bold h4 mb-3">
+                    <i className="bi bi-chat-dots-fill me-2 text-success"></i>
+                    Chatbot de Atención
+                  </h3>
+                  <p className="fx-muted mb-4">
+                    Chatea con nuestro bot para resolver dudas sobre planes, horarios y más.
+                  </p>
+                  <Chatbot />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section className="section anchor" id="contacto">
           <div className="container">
