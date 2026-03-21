@@ -244,7 +244,8 @@ export default function VoiceAssistant() {
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = "";
 
-      for (let i = (event as any).resultIndex; i < event.results.length; i++) {
+      const anyEvent = event as any;
+for (let i = anyEvent.resultIndex; i < anyEvent.results.length; i++) {
         const text = event.results[i][0].transcript;
 
         if (event.results[i].isFinal) {
