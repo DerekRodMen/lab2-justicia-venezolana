@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
+/* --------------------------------------------------------------------------
+   Tipos y modelos de datos usados por el asistente de voz
+-------------------------------------------------------------------------- */
+
 type VoiceFaq = {
   question: string;
   answer: string;
@@ -30,10 +34,13 @@ type WebkitSpeechWindow = Window & {
   webkitSpeechRecognition?: RecognitionConstructorLike;
 };
 
-
 interface SpeechRecognitionEventExtended extends SpeechRecognitionEvent {
   resultIndex: number;
 }
+
+/* --------------------------------------------------------------------------
+   Base de conocimiento: respuestas, datos del negocio y preguntas frecuentes
+-------------------------------------------------------------------------- */
 
 const knowledgeBase: KnowledgeBase = {
   businessName: "Force Extreme",
@@ -85,19 +92,29 @@ const knowledgeBase: KnowledgeBase = {
   ],
 };
 
+/* --------------------------------------------------------------------------
+   Función para normalizar texto: minúsculas y sin acentos
+-------------------------------------------------------------------------- */
+
 const normalizeText = (value: string) =>
   value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+/* --------------------------------------------------------------------------
+   Lógica para elegir la respuesta adecuada según la pregunta del usuario
+-------------------------------------------------------------------------- */
+
 const getReply = (question: string) => {
   const normalized = normalizeText(question);
 
+  // Nombre del negocio
   if (normalized.includes("nombre") || normalized.includes("empresa")) {
     return `Nuestro emprendimiento se llama ${knowledgeBase.businessName}.`;
   }
 
+  // Descripción general
   if (
     normalized.includes("quienes son") ||
     normalized.includes("que es") ||
@@ -106,6 +123,7 @@ const getReply = (question: string) => {
     return knowledgeBase.description;
   }
 
+  // Servicios
   if (
     normalized.includes("servicio") ||
     normalized.includes("producto") ||
@@ -114,10 +132,12 @@ const getReply = (question: string) => {
     return knowledgeBase.services;
   }
 
+  // Horarios
   if (normalized.includes("horario") || normalized.includes("abren")) {
     return knowledgeBase.schedules;
   }
 
+  // Ubicación
   if (
     normalized.includes("ubicacion") ||
     normalized.includes("direccion") ||
@@ -126,6 +146,7 @@ const getReply = (question: string) => {
     return knowledgeBase.location;
   }
 
+  // Contacto
   if (
     normalized.includes("contacto") ||
     normalized.includes("whatsapp") ||
@@ -134,6 +155,7 @@ const getReply = (question: string) => {
     return knowledgeBase.contact;
   }
 
+  // Proceso de compra
   if (
     normalized.includes("comprar") ||
     normalized.includes("reservar") ||
@@ -142,6 +164,7 @@ const getReply = (question: string) => {
     return knowledgeBase.purchasingProcess;
   }
 
+  // Promociones o precios
   if (
     normalized.includes("precio") ||
     normalized.includes("promocion") ||
@@ -150,6 +173,7 @@ const getReply = (question: string) => {
     return `${knowledgeBase.promotions} Los planes actuales van desde 10 mil hasta 40 mil colones al mes.`;
   }
 
+  // Buscar en las FAQ
   const faq = knowledgeBase.faqs.find((item) =>
     item.keywords.some((keyword) => normalized.includes(keyword))
   );
@@ -158,8 +182,13 @@ const getReply = (question: string) => {
     return faq.answer;
   }
 
+  // No coincide ninguna intención
   return "Puedo ayudarte con servicios, horarios, ubicación, promociones, contacto, compras y preguntas frecuentes. Intenta con otra pregunta.";
 };
+
+/* --------------------------------------------------------------------------
+   Función para obtener el constructor correcto de SpeechRecognition
+-------------------------------------------------------------------------- */
 
 function getRecognitionConstructor(): RecognitionConstructorLike | null {
   if (typeof window === "undefined") return null;
@@ -175,7 +204,15 @@ function getRecognitionConstructor(): RecognitionConstructorLike | null {
   return standardCtor ?? webkitCtor ?? null;
 }
 
+/* --------------------------------------------------------------------------
+   Componente principal del Asistente de Voz
+-------------------------------------------------------------------------- */
+
 export default function VoiceAssistant() {
+  /* ----------------------------------------------------------------------
+     Estados del asistente: si escucha, texto capturado, respuesta, etc.
+  ---------------------------------------------------------------------- */
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
@@ -183,6 +220,10 @@ export default function VoiceAssistant() {
   const [supported, setSupported] = useState(false);
 
   const recognitionRef = useRef<RecognitionLike | null>(null);
+
+  /* ----------------------------------------------------------------------
+     Efecto inicial: verificar compatibilidad y limpiar al desmontar
+  ---------------------------------------------------------------------- */
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -198,6 +239,10 @@ export default function VoiceAssistant() {
     };
   }, []);
 
+  /* ----------------------------------------------------------------------
+     Función para reproducir texto en voz (Text-to-Speech)
+  ---------------------------------------------------------------------- */
+
   const speak = (text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 
@@ -210,10 +255,18 @@ export default function VoiceAssistant() {
     window.speechSynthesis.speak(utterance);
   };
 
+  /* ----------------------------------------------------------------------
+     Detener reconocimiento de voz
+  ---------------------------------------------------------------------- */
+
   const stopListening = () => {
     recognitionRef.current?.stop();
     setIsListening(false);
   };
+
+  /* ----------------------------------------------------------------------
+     Iniciar escucha por micrófono y procesar lo que dice el usuario
+  ---------------------------------------------------------------------- */
 
   const startListening = () => {
     if (typeof window === "undefined" || isListening) return;
@@ -248,9 +301,10 @@ export default function VoiceAssistant() {
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = "";
-      
+
       const ev = event as SpeechRecognitionEventExtended;
 
+      // Procesar resultados del reconocimiento
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         const text = ev.results[i][0].transcript;
 
@@ -264,6 +318,7 @@ export default function VoiceAssistant() {
       const fullText = `${finalTranscript} ${interimTranscript}`.trim();
       setTranscript(fullText);
 
+      // Si ya se capturó texto final, se procesa la intención
       if (finalTranscript.trim()) {
         const cleanQuestion = finalTranscript.trim();
         const agentResponse = getReply(cleanQuestion);
@@ -276,6 +331,7 @@ export default function VoiceAssistant() {
       }
     };
 
+    // Manejo de errores del sistema de voz
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error === "no-speech") {
         setError("No detecté voz. Habla apenas presiones el botón.");
@@ -290,6 +346,7 @@ export default function VoiceAssistant() {
       setIsListening(false);
     };
 
+    // Cuando el reconocimiento se detiene
     recognition.onend = () => {
       setIsListening(false);
     };
@@ -297,6 +354,10 @@ export default function VoiceAssistant() {
     recognitionRef.current = recognition;
     recognition.start();
   };
+
+  /* ----------------------------------------------------------------------
+     Preguntas rápidas: simulan una pregunta predefinida sin usar micrófono
+  ---------------------------------------------------------------------- */
 
   const handleQuickQuestion = (question: string) => {
     setError("");
@@ -308,10 +369,15 @@ export default function VoiceAssistant() {
     speak(agentResponse);
   };
 
+  /* ----------------------------------------------------------------------
+     Render del componente y su interfaz
+  ---------------------------------------------------------------------- */
+
   return (
     <section className="section pt-0 anchor" id="agente-voz">
       <div className="container">
         <div className="fx-surface p-4 p-md-5 voice-assistant">
+          {/* Encabezado: botones principales y descripción */}
           <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
             <div>
               <h2 className="fw-bold mb-2">
@@ -324,6 +390,7 @@ export default function VoiceAssistant() {
               </p>
             </div>
 
+            {/* Botones de control */}
             <div className="d-flex flex-wrap gap-2">
               <button
                 type="button"
@@ -360,6 +427,7 @@ export default function VoiceAssistant() {
             </div>
           </div>
 
+          {/* Paneles informativos */}
           <div className="row g-4">
             <div className="col-lg-6">
               <div className="voice-panel p-3 h-100">
@@ -387,6 +455,7 @@ export default function VoiceAssistant() {
             </div>
           </div>
 
+          {/* Preguntas rápidas FAQ */}
           <div className="mt-4">
             <h3 className="h5 fw-bold mb-3">Preguntas rápidas (FAQ de voz)</h3>
             <div className="d-flex flex-wrap gap-2">
