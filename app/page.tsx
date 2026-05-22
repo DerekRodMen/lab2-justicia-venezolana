@@ -1,6 +1,8 @@
 import Chatbot from "@/components/Chatbot";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import LeadForm from "@/components/LeadForm";
+import ClassScheduleSection from "@/components/ClassScheduleSection";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const beneficios = [
   {
@@ -204,6 +206,11 @@ export default function Home() {
                 </a>
               </li>
               <li className="nav-item">
+                <a className="nav-link" href="#horarios">
+                  Horarios
+                </a>
+              </li>
+              <li className="nav-item">
                 <a className="nav-link" href="#resultados">
                   Resultados
                 </a>
@@ -225,7 +232,10 @@ export default function Home() {
               </li>
             </ul>
 
-            <div className="d-flex ms-lg-3 mt-3 mt-lg-0">
+            <div className="d-flex gap-2 ms-lg-3 mt-3 mt-lg-0">
+              <a className="btn btn-sm btn-fx-outline" href="/portal">
+                <i className="bi bi-person me-1" />Mi cuenta
+              </a>
               <a className="btn btn-fx fw-semibold" href="#contacto">
                 <i className="bi bi-calendar-check me-1"></i>
                 Agendar visita
@@ -450,16 +460,16 @@ export default function Home() {
 
         <section className="section anchor" id="beneficios">
           <div className="container">
-            <div className="text-center mb-5">
+            <ScrollReveal className="text-center mb-5">
               <h2 className="fw-bold">Beneficios que sí se sienten</h2>
               <p className="mb-0 fx-muted">
                 Menos dudas, más progreso. Todo con acompañamiento.
               </p>
-            </div>
+            </ScrollReveal>
 
             <div className="row g-3 g-md-4">
-              {beneficios.map((item) => (
-                <div className="col-md-6 col-lg-3" key={item.title}>
+              {beneficios.map((item, i) => (
+                <ScrollReveal as="div" className="col-md-6 col-lg-3" key={item.title} delay={(i % 4 + 1) as 1 | 2 | 3 | 4}>
                   <div className="fx-surface p-4 h-100">
                     <div className="icon-bubble mb-3">
                       <i className={`bi ${item.icon}`}></i>
@@ -467,7 +477,7 @@ export default function Home() {
                     <h5 className="fw-bold">{item.title}</h5>
                     <p className="mb-0 fx-muted">{item.text}</p>
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -475,7 +485,7 @@ export default function Home() {
 
         <section className="section anchor" id="programas">
           <div className="container">
-            <div className="row align-items-end mb-4">
+            <ScrollReveal className="row align-items-end mb-4">
               <div className="col-lg-7">
                 <h2 className="fw-bold mb-1">Programas</h2>
                 <p className="mb-0 fx-muted">
@@ -488,11 +498,11 @@ export default function Home() {
                   Quiero asesoría
                 </a>
               </div>
-            </div>
+            </ScrollReveal>
 
             <div className="row g-3 g-md-4">
-              {programas.map((programa) => (
-                <div className="col-md-6 col-lg-3" key={programa.title}>
+              {programas.map((programa, i) => (
+                <ScrollReveal as="div" className="col-md-6 col-lg-3" key={programa.title} delay={(i % 4 + 1) as 1 | 2 | 3 | 4}>
                   <div className="fx-surface p-4 h-100">
                     <h5 className="fw-bold">
                       <i className={`bi ${programa.icon} me-2`}></i>
@@ -504,18 +514,38 @@ export default function Home() {
                       ))}
                     </ul>
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
         </section>
 
+        <section className="section anchor" id="horarios">
+          <div className="container">
+            <div className="row align-items-end mb-4">
+              <div className="col-lg-7">
+                <h2 className="fw-bold mb-1">Horarios de clases</h2>
+                <p className="mb-0 fx-muted">
+                  Elige el día y reserva tu lugar. Cupos limitados por clase.
+                </p>
+              </div>
+              <div className="col-lg-5 text-lg-end mt-3 mt-lg-0">
+                <a className="btn btn-fx-outline" href="#contacto">
+                  <i className="bi bi-question-circle me-1"></i>
+                  ¿Dudas sobre planes?
+                </a>
+              </div>
+            </div>
+            <ClassScheduleSection />
+          </div>
+        </section>
+
         <section className="section anchor" id="resultados">
           <div className="container">
-            <div className="text-center mb-5">
+            <ScrollReveal className="text-center mb-5">
               <h2 className="fw-bold">Testimonios & reseñas</h2>
-              <p className="mb-0 fx-muted">Personas reales (placeholders).</p>
-            </div>
+              <p className="mb-0 fx-muted">Lo que dicen nuestros miembros.</p>
+            </ScrollReveal>
 
             <div
               id="fxTestimonials"
@@ -581,7 +611,7 @@ export default function Home() {
 
         <section className="section anchor" id="promos">
           <div className="container">
-            <div className="promo p-4 p-md-5 mb-4">
+            <ScrollReveal className="promo p-4 p-md-5 mb-4">
               <div className="row align-items-center g-3">
                 <div className="col-lg-8">
                   <h2 className="fw-bold mb-2">Promoción de bienvenida</h2>
@@ -600,18 +630,18 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
-            <div className="text-center mb-4">
+            <ScrollReveal className="text-center mb-4">
               <h2 className="fw-bold">Planes simples</h2>
               <p className="mb-0 fx-muted">
                 Máximo 3 opciones para decidir rápido.
               </p>
-            </div>
+            </ScrollReveal>
 
             <div className="row g-3 g-md-4">
-              {planes.map((plan) => (
-                <div className="col-md-6 col-lg-4" key={plan.title}>
+              {planes.map((plan, i) => (
+                <ScrollReveal as="div" className="col-md-6 col-lg-4" key={plan.title} delay={(i + 1) as 1 | 2 | 3}>
                   <div
                     className={`fx-surface p-4 h-100 ${
                       plan.popular ? "position-relative fx-popular" : ""
@@ -645,7 +675,7 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -653,12 +683,12 @@ export default function Home() {
 
         <section className="section anchor" id="asistentes-ia">
           <div className="container">
-            <div className="text-center mb-5">
+            <ScrollReveal className="text-center mb-5">
               <h2 className="fw-bold">Asistentes Inteligentes</h2>
               <p className="mb-0 fx-muted">
                 Contáctanos de la forma que prefieras: voz o chat
               </p>
-            </div>
+            </ScrollReveal>
 
             <div className="row g-4">
               <div className="col-lg-6">
@@ -693,7 +723,7 @@ export default function Home() {
         <section className="section anchor" id="contacto">
           <div className="container">
             <div className="row g-4">
-              <div className="col-lg-6">
+              <ScrollReveal as="div" className="col-lg-6" delay={1}>
                 <h2 className="fw-bold mb-2">Agenda tu visita</h2>
                 <p className="fx-muted">
                   Completa este formulario. Al enviar, se abrirá WhatsApp con tu
@@ -703,9 +733,9 @@ export default function Home() {
                 <div className="fx-surface p-4">
                   <LeadForm />
                 </div>
-              </div>
+              </ScrollReveal>
 
-              <div className="col-lg-6">
+              <ScrollReveal as="div" className="col-lg-6" delay={2}>
                 <div className="fx-surface p-4 h-100">
                   <h3 className="fw-bold h4 mb-3">Contacto directo</h3>
                   <p className="fx-muted mb-4">
@@ -782,7 +812,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
@@ -805,6 +835,10 @@ export default function Home() {
               <a href="#programas">Programas</a>
               <a href="#promos">Planes</a>
               <a href="#contacto">Contacto</a>
+              <a href="/portal" className="text-muted">Mi cuenta</a>
+              <a href="/admin" className="text-muted opacity-50" style={{ fontSize: "0.8rem" }}>
+                <i className="bi bi-lock-fill me-1" />Admin
+              </a>
             </div>
 
             <div className="small fx-muted">

@@ -194,7 +194,8 @@ export default function Chatbot() {
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h3>💪 Force Extreme - Asistente Virtual</h3>
+        <i className="bi bi-robot fs-5" />
+        <h3>Force Extreme — Asistente Virtual</h3>
       </div>
 
       <div className="chat-window">
@@ -254,157 +255,163 @@ export default function Chatbot() {
 
       <style jsx>{`
         .chat-container {
-          max-width: 400px;
-          margin: 0 auto;
-          border: 1px solid #e0e0e0;
-          border-radius: 12px;
+          width: 100%;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 18px;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            sans-serif;
+          background: rgba(255, 255, 255, 0.05);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         .chat-header {
-          background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+          background: linear-gradient(135deg, #ff3b30 0%, #b90000 100%);
           color: white;
-          padding: 16px;
-          text-align: center;
+          padding: 14px 18px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
 
         .chat-header h3 {
           margin: 0;
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 15px;
+          font-weight: 700;
         }
 
         .chat-window {
-          height: 400px;
+          height: 340px;
           overflow-y: auto;
           padding: 16px;
-          background: #f8f9fa;
+          background: rgba(0, 0, 0, 0.25);
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 10px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.15) transparent;
         }
 
         .message {
-          max-width: 80%;
-          padding: 12px 16px;
-          border-radius: 18px;
-          font-size: 14px;
-          line-height: 1.4;
+          max-width: 82%;
+          padding: 10px 14px;
+          border-radius: 16px;
+          font-size: 13.5px;
+          line-height: 1.5;
           word-wrap: break-word;
         }
 
         .msg-user {
           align-self: flex-end;
-          background: #007bff;
+          background: #ff3b30;
           color: white;
           border-bottom-right-radius: 4px;
         }
 
         .msg-bot {
           align-self: flex-start;
-          background: white;
-          color: #333;
-          border: 1px solid #e0e0e0;
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           border-bottom-left-radius: 4px;
         }
 
         .typing-indicator {
           display: flex;
-          gap: 4px;
-          padding: 4px 8px;
+          gap: 5px;
+          padding: 6px 8px;
+          align-items: center;
         }
 
         .typing-indicator span {
-          width: 8px;
-          height: 8px;
-          background: #999;
+          width: 7px;
+          height: 7px;
+          background: rgba(255, 255, 255, 0.5);
           border-radius: 50%;
-          animation: bounce 1.4s infinite ease-in-out both;
+          animation: chatBounce 1.4s infinite ease-in-out both;
         }
 
-        .typing-indicator span:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-        .typing-indicator span:nth-child(2) {
-          animation-delay: -0.16s;
-        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
 
-        @keyframes bounce {
-          0%,
-          80%,
-          100% {
-            transform: scale(0);
-          }
-          40% {
-            transform: scale(1);
-          }
+        @keyframes chatBounce {
+          0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+          40% { transform: scale(1); opacity: 1; }
         }
 
         .quick-suggestions {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 8px;
-          justify-content: center;
+          gap: 7px;
+          margin-top: 4px;
+          justify-content: flex-start;
         }
 
         .suggestion-btn {
-          background: white;
-          border: 1px solid #007bff;
-          color: #007bff;
-          padding: 6px 12px;
-          border-radius: 16px;
+          background: rgba(255, 59, 48, 0.1);
+          border: 1px solid rgba(255, 59, 48, 0.35);
+          color: rgba(255, 255, 255, 0.85);
+          padding: 5px 12px;
+          border-radius: 999px;
           font-size: 12px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.18s;
         }
 
         .suggestion-btn:hover {
-          background: #007bff;
-          color: white;
+          background: rgba(255, 59, 48, 0.25);
+          color: #fff;
+          border-color: rgba(255, 59, 48, 0.6);
         }
 
         .chat-input {
           display: flex;
           padding: 12px;
-          background: white;
-          border-top: 1px solid #e0e0e0;
+          background: rgba(0, 0, 0, 0.2);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
           gap: 8px;
+          align-items: center;
         }
 
         .chat-input input {
           flex: 1;
-          padding: 10px 14px;
-          border: 1px solid #ddd;
-          border-radius: 20px;
+          padding: 9px 14px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          border-radius: 999px;
           outline: none;
-          font-size: 14px;
+          font-size: 13.5px;
+          background: rgba(255, 255, 255, 0.07);
+          color: rgba(255, 255, 255, 0.92);
+          transition: border-color 0.15s;
+        }
+
+        .chat-input input::placeholder {
+          color: rgba(255, 255, 255, 0.4);
         }
 
         .chat-input input:focus {
-          border-color: #007bff;
+          border-color: rgba(255, 59, 48, 0.6);
+          background: rgba(255, 255, 255, 0.09);
         }
 
         .chat-input button {
-          padding: 10px 20px;
-          background: #007bff;
+          padding: 9px 18px;
+          background: #ff3b30;
           color: white;
           border: none;
-          border-radius: 20px;
+          border-radius: 999px;
           cursor: pointer;
-          font-weight: 500;
-          transition: background 0.2s;
+          font-weight: 600;
+          font-size: 13px;
+          transition: background 0.18s, transform 0.12s;
+          white-space: nowrap;
         }
 
         .chat-input button:hover:not(:disabled) {
-          background: #0056b3;
+          background: #ff1f14;
+          transform: scale(1.03);
         }
 
         .chat-input button:disabled {
-          opacity: 0.6;
+          opacity: 0.45;
           cursor: not-allowed;
         }
       `}</style>
