@@ -91,6 +91,11 @@ export default function PortalPage() {
             <button type="submit" className="btn btn-fx w-100 fw-semibold" disabled={loading}>
               {loading ? <><span className="spinner-border spinner-border-sm me-2" />Entrando...</> : "Ingresar"}
             </button>
+            <div className="text-center mt-3">
+              <a href="/portal/recuperar" className="small" style={{ color: "rgba(255,255,255,0.45)" }}>
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleRegister}>

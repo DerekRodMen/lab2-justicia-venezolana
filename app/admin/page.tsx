@@ -36,10 +36,16 @@ export default function AdminLogin() {
     >
       <div className="card border-0 shadow-lg p-4" style={{ width: "100%", maxWidth: 400, background: "var(--fx-surface)", backdropFilter: "blur(10px)" }}>
         <div className="text-center mb-4">
-          <span className="fw-black fs-4" style={{ color: "var(--fx-accent)" }}>
+          <div className="d-inline-flex align-items-center justify-content-center mb-3"
+            style={{ width: 52, height: 52, borderRadius: 14, background: "linear-gradient(135deg, #ff3b30, #b90000)", boxShadow: "0 10px 30px rgba(255,59,48,0.25)" }}>
+            <i className="bi bi-lightning-charge-fill text-white fs-4" />
+          </div>
+          <div className="fw-black fs-4" style={{ color: "var(--fx-accent)" }}>
             FORCE EXTREME
-          </span>
-          <p className="text-muted small mb-0 mt-1">Panel de administración</p>
+          </div>
+          <p className="text-muted small mb-0 mt-1">
+            <i className="bi bi-shield-lock me-1" />Panel de administración
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -77,6 +83,12 @@ export default function AdminLogin() {
             ) : "Ingresar"}
           </button>
         </form>
+
+        <div className="text-center mt-4">
+          <a href="/" className="small text-decoration-none" style={{ color: "rgba(255,255,255,0.55)" }}>
+            <i className="bi bi-arrow-left me-1" />Volver al inicio
+          </a>
+        </div>
       </div>
     </div>
   );

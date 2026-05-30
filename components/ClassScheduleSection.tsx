@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { getClasses, createBooking, getCurrentUser, getMyBookings, type ClassSchedule } from "@/lib/api";
+import { getClasses, createBooking, joinWaitlist, getCurrentUser, getMyBookings, type ClassSchedule } from "@/lib/api";
 
 const DAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const DAY_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -14,6 +14,7 @@ const CLASS_ICONS: Record<string, string> = {
 };
 
 type BookingForm = { name: string; phone: string; email: string };
+type ModalMode = "booking" | "waitlist";
 
 export default function ClassScheduleSection() {
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
@@ -21,6 +22,7 @@ export default function ClassScheduleSection() {
   const [selectedClass, setSelectedClass] = useState<ClassSchedule | null>(null);
   const [form, setForm] = useState<BookingForm>({ name: "", phone: "", email: "" });
   const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [modalMode, setModalMode] = useState<ModalMode>("booking");
   const [errorMsg, setErrorMsg] = useState("");
   const [activeDay, setActiveDay] = useState<number | null>(null);
   const [loggedUser, setLoggedUser] = useState<{ name: string; phone: string; email: string } | null>(null);
@@ -54,7 +56,15 @@ export default function ClassScheduleSection() {
 
   function openBooking(cls: ClassSchedule) {
     setSelectedClass(cls);
-    // Auto-fill with logged-in user data if available
+    setModalMode("booking");
+    setForm(loggedUser ?? { name: "", phone: "", email: "" });
+    setBookingStatus("idle");
+    setErrorMsg("");
+  }
+
+  function openWaitlist(cls: ClassSchedule) {
+    setSelectedClass(cls);
+    setModalMode("waitlist");
     setForm(loggedUser ?? { name: "", phone: "", email: "" });
     setBookingStatus("idle");
     setErrorMsg("");
@@ -66,16 +76,25 @@ export default function ClassScheduleSection() {
     setBookingStatus("loading");
     setErrorMsg("");
     try {
-      await createBooking({
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim() || undefined,
-        classScheduleId: selectedClass.id,
-      });
+      if (modalMode === "waitlist") {
+        await joinWaitlist({
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim() || undefined,
+          classScheduleId: selectedClass.id,
+        });
+      } else {
+        await createBooking({
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim() || undefined,
+          classScheduleId: selectedClass.id,
+        });
+      }
       setBookingStatus("success");
     } catch (err: unknown) {
       setBookingStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "No se pudo completar la reserva");
+      setErrorMsg(err instanceof Error ? err.message : "No se pudo completar la operación");
     }
   }
 
@@ -158,18 +177,24 @@ export default function ClassScheduleSection() {
                   <span><i className="bi bi-clock me-1" />{cls.startTime} – {cls.endTime}</span>
                 </div>
 
-                <div className="mt-auto">
+                <div className="mt-auto d-flex flex-column gap-2">
                   {alreadyBooked ? (
                     <a href="/portal/mis-reservas" className="btn btn-fx-outline w-100 fw-semibold">
                       <i className="bi bi-check-circle me-2" />Ver mi reserva
                     </a>
+                  ) : full ? (
+                    <button
+                      className="btn btn-fx-outline w-100 fw-semibold"
+                      onClick={() => openWaitlist(cls)}
+                    >
+                      <i className="bi bi-hourglass-split me-2" />Lista de espera
+                    </button>
                   ) : (
                     <button
-                      className={`btn w-100 ${full ? "btn-fx-outline" : "btn-fx"} fw-semibold`}
-                      disabled={full}
-                      onClick={() => !full && openBooking(cls)}
+                      className="btn btn-fx w-100 fw-semibold"
+                      onClick={() => openBooking(cls)}
                     >
-                      {full ? "Sin cupos" : "Reservar lugar"}
+                      <i className="bi bi-calendar-check me-2" />Reservar lugar
                     </button>
                   )}
                 </div>
@@ -190,7 +215,9 @@ export default function ClassScheduleSection() {
             <div className="modal-content border-0" style={{ background: "var(--fx-surface)", backdropFilter: "blur(16px)" }}>
               <div className="modal-header border-secondary">
                 <div>
-                  <h5 className="modal-title fw-bold mb-0">{selectedClass.name}</h5>
+                  <h5 className="modal-title fw-bold mb-0">
+                    {modalMode === "waitlist" ? "Lista de espera — " : ""}{selectedClass.name}
+                  </h5>
                   <p className="small fx-muted mb-0">
                     {DAYS[selectedClass.dayOfWeek]} · {selectedClass.startTime} – {selectedClass.endTime} · {selectedClass.instructor}
                   </p>
@@ -203,12 +230,50 @@ export default function ClassScheduleSection() {
               <div className="modal-body">
                 {bookingStatus === "success" ? (
                   <div className="text-center py-3">
-                    <i className="bi bi-check-circle-fill text-success" style={{ fontSize: "3rem" }} />
-                    <h5 className="fw-bold mt-3 mb-2">¡Reserva confirmada!</h5>
-                    <p className="fx-muted mb-0">
-                      Tu lugar en <strong>{selectedClass.name}</strong> está apartado.<br />
-                      Te esperamos el {DAYS[selectedClass.dayOfWeek].toLowerCase()} a las {selectedClass.startTime}.
-                    </p>
+                    <i
+                      className={`bi ${modalMode === "waitlist" ? "bi-hourglass-split text-warning" : "bi-check-circle-fill text-success"}`}
+                      style={{ fontSize: "3rem" }}
+                    />
+                    {modalMode === "waitlist" ? (
+                      <>
+                        <h5 className="fw-bold mt-3 mb-2">¡Anotado en lista de espera!</h5>
+                        <p className="fx-muted mb-3">
+                          Te avisaremos por email si se libera un cupo en{" "}
+                          <strong>{selectedClass.name}</strong>.
+                          {!form.email && (
+                            <span className="d-block mt-2 small" style={{ color: "var(--fx-accent)" }}>
+                              <i className="bi bi-info-circle me-1" />
+                              Agrega tu email la próxima vez para recibir el aviso automáticamente.
+                            </span>
+                          )}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h5 className="fw-bold mt-3 mb-2">¡Reserva confirmada!</h5>
+                        <p className="fx-muted mb-3">
+                          Tu lugar en <strong>{selectedClass.name}</strong> está apartado.<br />
+                          Te esperamos el {DAYS[selectedClass.dayOfWeek].toLowerCase()} a las {selectedClass.startTime}.
+                        </p>
+                        <a
+                          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "50660301104"}?text=${encodeURIComponent(
+                            `Hola Force Extreme 👋 Soy *${form.name}* y acabo de reservar mi lugar en la clase de *${selectedClass.name}* el *${DAYS[selectedClass.dayOfWeek]}* a las *${selectedClass.startTime}*. ¡Confirmo mi asistencia!`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-success fw-semibold w-100 mb-2"
+                          style={{ background: "#25d366", border: "none" }}
+                        >
+                          <i className="bi bi-whatsapp me-2" />Confirmar por WhatsApp
+                        </a>
+                      </>
+                    )}
+                    <button
+                      className="btn btn-fx-outline btn-sm w-100"
+                      onClick={() => setSelectedClass(null)}
+                    >
+                      Cerrar
+                    </button>
                   </div>
                 ) : (
                   <form onSubmit={handleBooking}>
@@ -251,11 +316,18 @@ export default function ClassScheduleSection() {
                       <div className="alert alert-danger py-2 small">{errorMsg}</div>
                     )}
 
-                    <button type="submit" className="btn btn-fx w-100 fw-semibold" disabled={bookingStatus === "loading"}>
-                      {bookingStatus === "loading"
-                        ? <><span className="spinner-border spinner-border-sm me-2" />Reservando...</>
-                        : <><i className="bi bi-calendar-check me-2" />Confirmar reserva</>
-                      }
+                    <button
+                      type="submit"
+                      className={`btn w-100 fw-semibold ${modalMode === "waitlist" ? "btn-fx-outline" : "btn-fx"}`}
+                      disabled={bookingStatus === "loading"}
+                    >
+                      {bookingStatus === "loading" ? (
+                        <><span className="spinner-border spinner-border-sm me-2" />{modalMode === "waitlist" ? "Anotando..." : "Reservando..."}</>
+                      ) : modalMode === "waitlist" ? (
+                        <><i className="bi bi-hourglass-split me-2" />Anotarme en lista de espera</>
+                      ) : (
+                        <><i className="bi bi-calendar-check me-2" />Confirmar reserva</>
+                      )}
                     </button>
                   </form>
                 )}

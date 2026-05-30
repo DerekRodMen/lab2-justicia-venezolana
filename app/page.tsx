@@ -3,6 +3,7 @@ import VoiceAssistant from "@/components/VoiceAssistant";
 import LeadForm from "@/components/LeadForm";
 import ClassScheduleSection from "@/components/ClassScheduleSection";
 import ScrollReveal from "@/components/ScrollReveal";
+import InstructorsSection from "@/components/InstructorsSection";
 
 const beneficios = [
   {
@@ -195,6 +196,11 @@ export default function Home() {
 
           <div className="collapse navbar-collapse" id="fxNav">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-2">
+              <li className="nav-item">
+                <a className="nav-link" href="#instructores">
+                  Instructores
+                </a>
+              </li>
               <li className="nav-item">
                 <a className="nav-link" href="#beneficios">
                   Beneficios
@@ -455,6 +461,16 @@ export default function Home() {
                 ></span>
               </button>
             </div>
+          </div>
+        </section>
+
+        <section className="section anchor" id="instructores">
+          <div className="container">
+            <ScrollReveal className="text-center mb-5">
+              <h2 className="fw-bold">Nuestros entrenadores</h2>
+              <p className="mb-0 fx-muted">Profesionales comprometidos con tu progreso.</p>
+            </ScrollReveal>
+            <InstructorsSection />
           </div>
         </section>
 

@@ -59,6 +59,9 @@ export default function PerfilPage() {
           <a href="/portal/mis-reservas" className="btn btn-sm btn-fx-outline">
             <i className="bi bi-calendar-check me-1" />Mis reservas
           </a>
+          <a href="/portal/progreso" className="btn btn-sm btn-fx-outline d-none d-sm-inline-flex">
+            <i className="bi bi-graph-up me-1" />Progreso
+          </a>
           <button className="btn btn-sm btn-outline-secondary" onClick={() => { logoutUser(); router.push("/"); }}>
             <i className="bi bi-box-arrow-right me-1" />Salir
           </button>
